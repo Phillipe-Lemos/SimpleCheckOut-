@@ -1,0 +1,29 @@
+server:
+  port: 8080
+  context-path: /
+spring:
+  jpa:
+    database: h2
+    generate-ddl: false
+    show-sql: true
+    hibernate:
+      ddl-auto: false
+  datasource:
+    name: oms-auth
+    initialize: true
+    url: jdbc:h2:mem:simplecheckout
+    schema: classpath:sql/schema.sql
+    data: classpath:sql/data.sql
+  mvc:
+    favicon:
+      enabled: false
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: trace
+        type:
+          descriptor:
+            sql:
+              BasicBinder: debug
+debug: false

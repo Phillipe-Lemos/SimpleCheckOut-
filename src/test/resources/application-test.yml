@@ -1,0 +1,29 @@
+server:
+  port: 9000
+  context-path: /SimpleCheckOut/db
+spring:
+  jpa:
+    database: h2
+    generate-ddl: false
+    show-sql: true
+    hibernate:
+      ddl-auto: false
+  datasource:
+    name: oms-auth
+    initialize: true
+    url: jdbc:h2:mem:simplecheckout
+    schema: classpath:scripts/sql/schema-test.sql
+    data: classpath:scripts/sql/data-test.sql
+  mvc:
+    favicon:
+      enabled: false
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: trace
+        type:
+          descriptor:
+            sql:
+              BasicBinder: debug
+debug: false

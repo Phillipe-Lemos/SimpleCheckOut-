@@ -5,6 +5,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PurchaseSkuDTO {
@@ -12,14 +13,17 @@ public class PurchaseSkuDTO {
  
 	@NotNull(message = "The sku must have a valid identifier.")
 	@Min(value=1)
+	@JsonProperty("id_sku")
 	private Long idSku;
 
 	@NotNull(message = "The purchase must have a quantity.")
 	@DecimalMin(value="0.00")
+	@JsonProperty("qtd_sku")
 	private Double qtdSku;
 	
 	@NotNull(message = "The client must have a valid identifier.")
 	@Min(value=1)
+	@JsonProperty("id_client")
 	private Long clientId;
 	
 	public Long getIdSku() {

@@ -1,9 +1,7 @@
 package com.supermarket.simplechekout.controller;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.fail;
-//import static org.mockito.Matchers.anyDouble;
-import static org.mockito.Matchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -71,110 +69,110 @@ public class OrderControllerTest {
 	}
 
 	@Test
-	public void shouldCheckOutItem(){
+	public void shouldCheckOutItem() throws Exception {
 		uri = "/rest/order/new";
-		try{
-			PurchaseSkuDTO purchaseSkuDTO = new PurchaseSkuDTO(1L,2D, client.getClientId());
-			final String requestBody = builder.build().writerWithDefaultPrettyPrinter().writeValueAsString(purchaseSkuDTO);
-			SkuOrderItem skuOrderItem = new SkuOrderItem(new SkuOrder(client), sku, purchaseSkuDTO.getQtdSku());
-			
-			when(skuOrderService.addOrderItem(purchaseSkuDTO.getClientId(), 
-    		                                  purchaseSkuDTO.getIdSku(),
-    		                                  purchaseSkuDTO.getQtdSku())).thenReturn(skuOrderItem);        
-	        mockMvc.perform(post(uri)
-	                        .contentType(MediaType.APPLICATION_JSON)
-	                        .content(requestBody))
-	                        .andExpect(MockMvcResultMatchers.status().isCreated());
-		} catch(Exception exception){
-			fail(exception.getMessage());
-		}
+		PurchaseSkuDTO purchaseSkuDTO = new PurchaseSkuDTO(1L,2D, client.getClientId());
+		final String requestBody = builder.build().writerWithDefaultPrettyPrinter().writeValueAsString(purchaseSkuDTO);
+		SkuOrderItem skuOrderItem = new SkuOrderItem(new SkuOrder(client), sku, purchaseSkuDTO.getQtdSku());
+		
+		when(skuOrderService.addOrderItem(purchaseSkuDTO.getClientId(), 
+		                                  purchaseSkuDTO.getIdSku(),
+		                                  purchaseSkuDTO.getQtdSku())).thenReturn(skuOrderItem);        
+        mockMvc.perform(post(uri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                        .andExpect(MockMvcResultMatchers.status().isCreated());
 	}
 	
 	@Test
-	public void shoutNotCheckOutItemDueNegativeSkuId(){
+	public void shoutNotCheckOutItemDueNegativeSkuId() throws Exception {
 		uri = "/rest/order/new";
-		try{
-			PurchaseSkuDTO purchaseSkuDTO = new PurchaseSkuDTO(-1L,2D, client.getClientId());
-			final String requestBody = builder.build().writerWithDefaultPrettyPrinter().writeValueAsString(purchaseSkuDTO);
-			when(skuOrderService.addOrderItem(purchaseSkuDTO.getClientId(), 
-    		                                  purchaseSkuDTO.getIdSku(),
-    		                                  purchaseSkuDTO.getQtdSku())).thenThrow(new IllegalArgumentException());        
-	        mockMvc.perform(post(uri)
-	                        .contentType(MediaType.APPLICATION_JSON)
-	                        .content(requestBody))
-	                        .andExpect(MockMvcResultMatchers.status().isBadRequest());
-		} catch(Exception exception){
-			fail(exception.getMessage());
-		}
+		PurchaseSkuDTO purchaseSkuDTO = new PurchaseSkuDTO(-1L,2D, client.getClientId());
+		final String requestBody = builder.build().writerWithDefaultPrettyPrinter().writeValueAsString(purchaseSkuDTO);
+		when(skuOrderService.addOrderItem(purchaseSkuDTO.getClientId(), 
+		                                  purchaseSkuDTO.getIdSku(),
+		                                  purchaseSkuDTO.getQtdSku())).thenThrow(new IllegalArgumentException());        
+        mockMvc.perform(post(uri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                        .andExpect(MockMvcResultMatchers.status().isBadRequest());
 	}
 	
 	@Test
-	public void shoutNotCheckOutItemDueNegativeClientId(){
+	public void shoutNotCheckOutItemDueNegativeClientId() throws Exception {
 		uri = "/rest/order/new";
-		try{
-			PurchaseSkuDTO purchaseSkuDTO = new PurchaseSkuDTO(sku.getId(),2D, -1L);
-			final String requestBody = builder.build().writerWithDefaultPrettyPrinter().writeValueAsString(purchaseSkuDTO);
-			when(skuOrderService.addOrderItem(purchaseSkuDTO.getClientId(), 
-    		                                  purchaseSkuDTO.getIdSku(),
-    		                                  purchaseSkuDTO.getQtdSku())).thenThrow(new IllegalArgumentException());        
-	        mockMvc.perform(post(uri)
-	                        .contentType(MediaType.APPLICATION_JSON)
-	                        .content(requestBody))
-	                        .andExpect(MockMvcResultMatchers.status().isBadRequest());
-		} catch(Exception exception){
-			fail(exception.getMessage());
-		}
+		PurchaseSkuDTO purchaseSkuDTO = new PurchaseSkuDTO(sku.getId(),2D, -1L);
+		final String requestBody = builder.build().writerWithDefaultPrettyPrinter().writeValueAsString(purchaseSkuDTO);
+		when(skuOrderService.addOrderItem(purchaseSkuDTO.getClientId(), 
+		                                  purchaseSkuDTO.getIdSku(),
+		                                  purchaseSkuDTO.getQtdSku())).thenThrow(new IllegalArgumentException());        
+        mockMvc.perform(post(uri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                        .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
 	}
 	
 	@Test
-	public void shoutNotCheckOutItemDueNegativeQuantity(){
+	public void shoutNotCheckOutItemDueNegativeQuantity() throws Exception{
 		uri = "/rest/order/new";
-		try{
-			PurchaseSkuDTO purchaseSkuDTO = new PurchaseSkuDTO(sku.getId(),-2D, client.getClientId());
-			final String requestBody = builder.build().writerWithDefaultPrettyPrinter().writeValueAsString(purchaseSkuDTO);
-			when(skuOrderService.addOrderItem(purchaseSkuDTO.getClientId(), 
-    		                                  purchaseSkuDTO.getIdSku(),
-    		                                  purchaseSkuDTO.getQtdSku())).thenThrow(new IllegalArgumentException());        
-	        mockMvc.perform(post(uri)
-	                        .contentType(MediaType.APPLICATION_JSON)
-	                        .content(requestBody))
-	                        .andExpect(MockMvcResultMatchers.status().isBadRequest());
-		} catch(Exception exception){
-			fail(exception.getMessage());
-		}
+		PurchaseSkuDTO purchaseSkuDTO = new PurchaseSkuDTO(sku.getId(),-2D, client.getClientId());
+		final String requestBody = builder.build().writerWithDefaultPrettyPrinter().writeValueAsString(purchaseSkuDTO);
+		when(skuOrderService.addOrderItem(purchaseSkuDTO.getClientId(), 
+		                                  purchaseSkuDTO.getIdSku(),
+		                                  purchaseSkuDTO.getQtdSku())).thenThrow(new IllegalArgumentException());        
+        mockMvc.perform(post(uri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                        .andExpect(MockMvcResultMatchers.status().isBadRequest());
 	}
 	
 	@Test
-	public void shouldGetTotalcheckOutByClient(){
+	public void shouldGetTotalcheckOutByClient() throws Exception {
 		int clientId = 1;
 		uri = "/rest/order/" + clientId;
-		try{
-			when(skuOrderService.totalOrderByClient(anyLong())).
-			   thenReturn(new SkuOrder(1L,client, valueBase, valueBase, valueBase));
-			
-	        mockMvc.perform(get(uri)
-	                        .contentType(MediaType.APPLICATION_JSON))
-	                        .andExpect(MockMvcResultMatchers.status().isOk())
-	                        .andExpect(jsonPath("$.totalNumberItens").value(equalTo(valueBase)));
-		} catch(Exception exception){
-			fail(exception.getMessage());
-		}
+		when(skuOrderService.totalOrderByClient(anyLong())).
+		   thenReturn(new SkuOrder(1L,client, valueBase, valueBase, valueBase));
+		
+        mockMvc.perform(get(uri)
+                        .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(MockMvcResultMatchers.status().isOk())
+                        .andExpect(jsonPath("$.totalNumberItens").value(equalTo(valueBase)));
 	}
 
 	@Test
-	public void shouldNotGetTotalcheckOutByClientDueNegativeClientId(){
+	public void shouldNotGetTotalcheckOutByClientDueNegativeClientId() throws Exception {
 		int clientId = -1;
 		uri = "/rest/order/" + clientId;
-		try{
-			when(skuOrderService.totalOrderByClient(anyLong())).
-			   thenThrow(new IllegalArgumentException());
-			
-	        mockMvc.perform(get(uri)
-	                        .contentType(MediaType.APPLICATION_JSON))
-	                        .andExpect(MockMvcResultMatchers.status().isBadRequest());
-		} catch(Exception exception){
-			fail(exception.getMessage());
-		}
+		when(skuOrderService.totalOrderByClient(anyLong())).
+		   thenThrow(new IllegalArgumentException());
+		
+        mockMvc.perform(get(uri)
+                        .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(MockMvcResultMatchers.status().isBadRequest());
 	}
+	
+	@Test
+	public void shouldHandleJsonParseException() throws Exception {
+		final String content = "{\"id_sku\":\"-1\",\"qtd_sku\":\"10\",\"id_client\"\"10\"}";
+		uri = "/rest/order/new";
+        mockMvc.perform(post(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+                .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity());
+		
+	}
+	
+	@Test
+	public void shouldHandleJsonMappingException() throws Exception {
+		final String content = "{\"idsku\":\"-1\",\"qtdsku\":\"10\",\"id_client\"\"10\"}";
+		uri = "/rest/order/new";
+        mockMvc.perform(post(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+                .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity());
+		
+	}
+
 
 }

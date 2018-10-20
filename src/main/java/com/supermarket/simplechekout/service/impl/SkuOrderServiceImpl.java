@@ -74,47 +74,35 @@ public class SkuOrderServiceImpl implements SkuOrderService {
 		if(idClient == null || idClient <= 0){
 			throw new IllegalArgumentException("Invalid client identifier !");
 		}
-		Client client = clientRepository.findOne(idClient);
-		
-		if(client == null){
-			throw new IllegalArgumentException("Invalid client identifier !");
-		}
-		
+		final Client client = clientRepository
+				                   .findById(idClient)
+				                   .orElseThrow(() -> new IllegalArgumentException("Invalid client identifier !"));
 		
 		if(idSku == null || idClient <= 0){
 			throw new IllegalArgumentException("Invalid sku identifier !");
 		}
 		
-		Sku sku = skuRepository.findOne(idSku);
-		
-		if(sku == null){
-			throw new IllegalArgumentException("Invalid sku identifier !");
-		}
+		final Sku sku = skuRepository
+				          .findById(idSku)
+				          .orElseThrow(() -> new IllegalArgumentException("Invalid sku identifier !"));
 		
 		if(quantity <= 0){
 			throw new IllegalArgumentException("Invalid quantity !");
 		}
-		SkuOrder skuOrder = null;
-		SkuOrderItem skuOrderItem = null;
+		
 		try{
-			skuOrder = skuOrderRepository.findSkuOrderByClientAndNullFinished(client);
+			SkuOrder skuOrder = skuOrderRepository.findSkuOrderByClientAndNullFinished(client);
 			if(skuOrder == null){
 				LOG.info(">>> adding skuorder ");
 				skuOrder =  skuOrderRepository.save(new SkuOrder(client));
 				LOG.info(">>> added skuorder ");
 			}
 			LOG.info(">>> adding skuOrderItem " );
-			skuOrderItem = skuOrderItemRepository.save(new SkuOrderItem(skuOrder,sku, quantity));
-			LOG.info(">>> added skuOrderItem " );
-        } catch (DataIntegrityViolationException e){
-            LOG.warn("Some constraints were throw due offer creation", e);
-            throw new ConstraintsViolationException(e.getMessage());
+			return skuOrderItemRepository.save(new SkuOrderItem(skuOrder,sku, quantity));			
         } catch(Exception t){
             LOG.warn("Some constraints were throw due offer creation", t);
             throw new ConstraintsViolationException(t.getMessage());
         }
-		
-		return skuOrderItem;
 	}
 	
 	/**
@@ -133,13 +121,11 @@ public class SkuOrderServiceImpl implements SkuOrderService {
 			throw new IllegalArgumentException("Invalid client identifier !");
 		}
 		
-		Client client = clientRepository.findOne(idClient);
+		final Client client = clientRepository
+				               .findById(idClient)
+				               .orElseThrow(() -> new IllegalArgumentException("Invalid client identifier !"));
 		
-		if(client ==  null){
-			throw new IllegalArgumentException("Invalid client identifier !");
-		}
-		
-		SkuOrder skuOrder = skuOrderRepository.findSkuOrderByClientAndNullFinished(client);
+		final SkuOrder skuOrder = skuOrderRepository.findSkuOrderByClientAndNullFinished(client);
 		
 		if(skuOrder == null){
 			throw new IllegalArgumentException("There is no check-outs for this client !");
@@ -179,9 +165,6 @@ public class SkuOrderServiceImpl implements SkuOrderService {
 			});
 			skuOrder.setFinishedDate(ZonedDateTime.now());
 			skuOrderRepository.save(skuOrder);
-        } catch (DataIntegrityViolationException e){
-            LOG.warn("Some constraints were throw due offer creation", e);
-            throw new ConstraintsViolationException(e.getMessage());
         } catch(Exception t){
             LOG.warn("Some constraints were throw due offer creation", t);
             throw new ConstraintsViolationException(t.getMessage());

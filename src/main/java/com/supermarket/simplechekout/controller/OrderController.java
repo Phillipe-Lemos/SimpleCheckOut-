@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,12 +18,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.supermarket.simplechekout.domin.SkuOrder;
 import com.supermarket.simplechekout.domin.SkuOrderItem;
 import com.supermarket.simplechekout.dto.CheckoutTotalsDTO;
 import com.supermarket.simplechekout.dto.PurchaseSkuDTO;
 import com.supermarket.simplechekout.dto.TotalCheckOutDTO;
-import com.supermarket.simplechekout.exception.BadRequestException;
 import com.supermarket.simplechekout.exception.ConstraintsViolationException;
 import com.supermarket.simplechekout.service.SkuOrderService;
 
@@ -48,16 +53,15 @@ public class OrderController {
 	 */
     @PostMapping("/new")
     @ResponseStatus(HttpStatus.CREATED)
-	public TotalCheckOutDTO checkOutItem(@Valid @RequestBody PurchaseSkuDTO item) throws ConstraintsViolationException, BadRequestException{
+	public ResponseEntity<TotalCheckOutDTO> checkOutItem(@Valid @RequestBody PurchaseSkuDTO item) {
     	LOG.info(">>> purchaseItem " + item);
-    	SkuOrderItem added =  null;
-    	try{
-    		added =  skuOrderService.addOrderItem(item.getClientId(), item.getIdSku(), item.getQtdSku());
-    	} catch(IllegalArgumentException illegalArgumentException){
-    		throw new BadRequestException(illegalArgumentException.getMessage());
-    	}
+    	SkuOrderItem added =  skuOrderService.addOrderItem(item.getClientId(), item.getIdSku(), item.getQtdSku());
     	LOG.info(">>> after addOrderItem " + item);
-    	return new TotalCheckOutDTO(added.getSku().getSkuName(), added.getSku().getPrice());
+    	final ResponseEntity<TotalCheckOutDTO> responseEntity 
+    	                 = new ResponseEntity<>(new TotalCheckOutDTO(added.getSku().getSkuName(), 
+                                                                  added.getSku().getPrice()), 
+    			                                           HttpStatus.CREATED); 
+    	return responseEntity;
 	}
     
     /**
@@ -69,20 +73,34 @@ public class OrderController {
      */
     @GetMapping("/{clientId}")
     @ResponseStatus(HttpStatus.OK)
-    public CheckoutTotalsDTO getTotalcheckOutByClient(@Valid @PathVariable long clientId)  throws ConstraintsViolationException, BadRequestException{
+    public ResponseEntity<CheckoutTotalsDTO> getTotalcheckOutByClient(@Valid @PathVariable long clientId) {
     	LOG.info(">>> getTotalcheckOutByClient ");
-    	SkuOrder  skuOrder = null;
-    	try {
-	    	skuOrder = skuOrderService.totalOrderByClient(clientId);
-
-    	} catch(IllegalArgumentException illegalArgumentException){
-    		throw new BadRequestException(illegalArgumentException.getMessage());
-    	}
-    	return new CheckoutTotalsDTO(new Date(), 
+    	final SkuOrder  skuOrder = skuOrderService.totalOrderByClient(clientId);
+    	return ResponseEntity.ok(new CheckoutTotalsDTO(new Date(), 
                 skuOrder.getQuantity(), 
                 skuOrder.getTotalBeforeDiscount(),
                 skuOrder.getTotalDiscount(),
-                skuOrder.getAmoutPay());
+                skuOrder.getAmoutPay()));
     }
-	
+    
+    @ExceptionHandler({IllegalArgumentException.class})
+	private ResponseEntity<String> handlerIllegalArgumentException(IllegalArgumentException illegal) {
+    	LOG.error(illegal.getMessage(), illegal);
+		return new ResponseEntity<String>(illegal.getMessage(), HttpStatus.BAD_REQUEST);
+	}
+		
+    @ExceptionHandler({JsonParseException.class, 
+    	               JsonMappingException.class, 
+    	               InvalidFormatException.class})
+    @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
+    private void handleJsonException(JsonParseException ex) {
+    	LOG.error("Json problems", ex);
+    }
+    
+    @ExceptionHandler({MismatchedInputException.class})
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    private void handleJsonFormatException(MismatchedInputException ex) {
+    	LOG.error("Problems with inputstreams :", ex);
+    }
+		
 }

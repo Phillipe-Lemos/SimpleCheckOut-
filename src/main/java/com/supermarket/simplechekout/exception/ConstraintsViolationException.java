@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  *
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason="Some constraints were reached...")
-public class ConstraintsViolationException extends Exception {
+public class ConstraintsViolationException extends RuntimeException {
 
 	private static final long serialVersionUID = -3387516993224229948L;
 
